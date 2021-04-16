@@ -1,0 +1,3 @@
+﻿klienci beda obslugiwani przez serwer http
+serwer napisany w php
+trzeba to jakos zabezpieczyc moze jakies tokeny
