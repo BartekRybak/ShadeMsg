@@ -18,21 +18,18 @@ namespace ShadeMsg.Security
         public static string EncryptPacket(Packet packet, string password)
         {
             string json_packet = JsonConvert.SerializeObject(packet);
-
             byte[] iv = Encryption.GenerateIV();
             byte[] crypted_packet = Encryption.Encrypt(json_packet, Encryption.CreateKey(password), iv);
-            byte[] hmac = Encryption.GetHMAC(crypted_packet, Encryption.CreateKey(password));
 
-            using(BinaryWriter binaryWriter = new BinaryWriter(new MemoryStream()))
+            using (BinaryWriter binaryWriter = new BinaryWriter(new MemoryStream()))
             {
                 binaryWriter.Write(crypted_packet);
                 binaryWriter.Write(iv);
-                binaryWriter.Write(hmac);
 
                 using(BinaryReader binaryReader = new BinaryReader(binaryWriter.BaseStream))
                 {
                     binaryReader.BaseStream.Position = 0;
-                    return Convert.ToBase64String(binaryReader.ReadBytes(crypted_packet.Length + iv.Length + hmac.Length));
+                    return Convert.ToBase64String(binaryReader.ReadBytes(crypted_packet.Length + iv.Length));
                 }
             }
         }
@@ -54,17 +51,11 @@ namespace ShadeMsg.Security
                 using(BinaryReader binaryReader = new BinaryReader(binaryWriter.BaseStream))
                 {
                     binaryReader.BaseStream.Position = 0;
-                    byte[] clear_byte_packet = binaryReader.ReadBytes(crypted_byte_packet_with_iv.Length - 80);
+                    byte[] clear_byte_packet = binaryReader.ReadBytes(crypted_byte_packet_with_iv.Length - 16);
                     byte[] iv = binaryReader.ReadBytes(16);
-                    byte[] hmac1 = binaryReader.ReadBytes(64);
-                    byte[] hmac2 = Encryption.GetHMAC(clear_byte_packet, Encryption.CreateKey(password));
 
-                    if(Encryption.CompareHMAC(hmac1,hmac2))
-                    {
-                        string decrypted_json = Encryption.Decrypt(clear_byte_packet, Encryption.CreateKey(password), iv);
-                        return JsonConvert.DeserializeObject<Packet>(decrypted_json);
-                    }
-                    return Packet.Empty;
+                    string decrypted_json = Encryption.Decrypt(clear_byte_packet, Encryption.CreateKey(password), iv);
+                    return JsonConvert.DeserializeObject<Packet>(decrypted_json);
                 }
             }
         }

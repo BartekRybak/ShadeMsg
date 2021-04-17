@@ -10,15 +10,10 @@ namespace ShadeMsg
         static void Main(string[] args)
         {
             Console.WriteLine();
-
             Server s = new Server("asdf", 1234);
-
-            Packet p = new Packet() { data = "testownaie na ostro kurde felek" };
-
-            Console.WriteLine("szyfrowanie");
-            string crypted = PacketEncryption.EncryptPacket(p, "1234");
-            Console.WriteLine("deszyfrownaie");
-            Console.WriteLine(PacketEncryption.DecryptPacket(crypted, "1234").data);
+            Packet p = new Packet() { data = "elo co tam" };
+            string packet_c = PacketEncryption.EncryptPacket(p, "smok20122");
+            Console.WriteLine(PacketEncryption.DecryptPacket(packet_c, "smok20122").data);
 
             Console.ReadKey();
         }
