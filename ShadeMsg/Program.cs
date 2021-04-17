@@ -2,6 +2,7 @@
 using System.Text;
 using ShadeMsg.Network;
 using ShadeMsg.Security;
+using System.Threading;
 
 namespace ShadeMsg
 {
@@ -10,12 +11,21 @@ namespace ShadeMsg
         static void Main(string[] args)
         {
             Console.WriteLine();
-            Server s = new Server("asdf", 1234);
-            Packet p = new Packet() { data = "elo co tam" };
-            string packet_c = PacketEncryption.EncryptPacket(p, "smok20122");
-            Console.WriteLine(PacketEncryption.DecryptPacket(packet_c, "smok20122").data);
+            Client client = new Client("127.0.0.1", 8001,"smok20122");
+            client.Connect();
+            Console.WriteLine("Connected");
+            client.NewPacket += Client_NewPacket;
+           
+            while (true) {
+                string text = Console.ReadLine();
+                client.Send(new Packet() { data = text });
+                Thread.Sleep(1000); 
+            }
+        }
 
-            Console.ReadKey();
+        private static void Client_NewPacket(Packet packet)
+        {
+            Console.WriteLine(packet.data);
         }
     }
 }
