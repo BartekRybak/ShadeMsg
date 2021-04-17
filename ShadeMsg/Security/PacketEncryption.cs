@@ -20,6 +20,14 @@ namespace ShadeMsg.Security
             string json_packet = JsonConvert.SerializeObject(packet);
             byte[] iv = Encryption.GenerateIV();
             byte[] crypted_packet = Encryption.Encrypt(json_packet, Encryption.CreateKey(password), iv);
+            try
+            {
+                crypted_packet = Encryption.Encrypt(json_packet, Encryption.CreateKey(password), iv);
+            }
+            catch
+            {
+                throw new Exception("Can't crypt packet. Something is wrong.");
+            }
 
             using (BinaryWriter binaryWriter = new BinaryWriter(new MemoryStream()))
             {
@@ -54,8 +62,16 @@ namespace ShadeMsg.Security
                     byte[] clear_byte_packet = binaryReader.ReadBytes(crypted_byte_packet_with_iv.Length - 16);
                     byte[] iv = binaryReader.ReadBytes(16);
 
-                    string decrypted_json = Encryption.Decrypt(clear_byte_packet, Encryption.CreateKey(password), iv);
-                    return JsonConvert.DeserializeObject<Packet>(decrypted_json);
+                    try
+                    {
+                        string decrypted_json = Encryption.Decrypt(clear_byte_packet, Encryption.CreateKey(password), iv);
+                        return JsonConvert.DeserializeObject<Packet>(decrypted_json);
+                    }
+                    catch
+                    {
+                        throw new Exception("Can't Decrypt packet. Wrong password or input data");
+                    }
+                    }
                 }
             }
         }
