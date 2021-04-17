@@ -47,7 +47,6 @@ namespace ShadeMsg.Security
                         using (StreamReader srDecrypt = new StreamReader(csDecrypt))
                         {
                             return srDecrypt.ReadToEnd();
-                            //return Encoding.UTF8.GetBytes();
                         }
                     }
                 }
