@@ -8,6 +8,7 @@ using ShadeMsg.Security;
 using System.Net.Sockets;
 using System.ComponentModel;
 using System.Threading;
+using System.IO;
 
 namespace ShadeMsg.Network
 {
@@ -40,11 +41,20 @@ namespace ShadeMsg.Network
         {
             while(!tcpClient.Connected)
             {
-                tcpClient.Connect(server, port);
-                networkStream = tcpClient.GetStream();
+                try
+                {
+                    tcpClient.Connect(server, port);
+                }
+                catch
+                {
+
+                }
+                
+                
                 
                 Thread.Sleep(1000);
             }
+            networkStream = tcpClient.GetStream();
             background_receive.DoWork += Background_receive_DoWork;
             background_receive.RunWorkerAsync();
         }
@@ -53,12 +63,12 @@ namespace ShadeMsg.Network
         {
             while(true)
             {
-                
-                if(networkStream.DataAvailable)
+                if(tcpClient.Connected/*networkStream.DataAvailable*/)
                 {
                     byte[] data = new byte[1024];
-                    networkStream.Read(data, 0, data.Length);
-                    NewPacket(PacketEncryption.DecryptPacket(Encoding.UTF8.GetString(data), password));
+                    Stream stream = tcpClient.GetStream();
+                    int k = stream.Read(data, 0, data.Length);
+                    NewPacket(PacketEncryption.DecryptPacket(Encoding.UTF8.GetString(data).Trim('\0'), password));
                 }
                 Thread.Sleep(1000);
             }

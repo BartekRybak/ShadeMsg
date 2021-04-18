@@ -4,7 +4,7 @@ using System.Text;
 
 namespace ShadeMsg.Network
 {
-    class Packet
+    public class Packet
     {
         public string data = string.Empty;
 

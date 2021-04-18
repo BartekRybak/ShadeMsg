@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.ComponentModel;
 using System.Threading;
 using ShadeMsg.Network;
+using ShadeMsg.Security;
 
 namespace ShadeMsg_Server.Network
 {
@@ -38,13 +39,35 @@ namespace ShadeMsg_Server.Network
             backgroundListener.RunWorkerAsync();
         }
 
+        public void Send(Packet packet,Client client)
+        {
+            BackgroundWorker backgroundSender = new BackgroundWorker();
+            backgroundSender.DoWork += (obj,e) => BackgroundSender_DoWork(packet,client);
+            backgroundSender.RunWorkerAsync();
+        }
+
+        private void BackgroundSender_DoWork(Packet packet, Client client)
+        {
+            if (client.socket.Connected)
+            {
+                Socket socket = client.socket;
+                string crypted_packet = PacketEncryption.EncryptPacket(packet, password);
+
+                if(!string.IsNullOrEmpty(crypted_packet))
+                {
+                    byte[] data = Encoding.UTF8.GetBytes(PacketEncryption.EncryptPacket(packet, password));
+                    socket.Send(data);
+                    Console.WriteLine(">> {0}", packet.data);
+                }
+            }
+        }
+
         private void BackgroundListener_DoWork(object sender, DoWorkEventArgs e)
         {
             while(true)
             {
                 Socket socket = tcpListener.AcceptSocket();
                 NewSocketConnected(socket);
-
                 Thread.Sleep(100);
             }
         }

@@ -11,7 +11,7 @@ namespace ShadeMsg
         static void Main(string[] args)
         {
             Console.WriteLine();
-            Client client = new Client("127.0.0.1", 8001,"smok20122");
+            Client client = new Client("127.0.0.1", 8001,"1234");
             client.Connect();
             Console.WriteLine("Connected");
             client.NewPacket += Client_NewPacket;

@@ -7,7 +7,7 @@ using System.IO;
 
 namespace ShadeMsg.Security
 {
-    class PacketEncryption
+    public class PacketEncryption
     {
         /// <summary>
         /// Encrypt packet before send
@@ -17,28 +17,35 @@ namespace ShadeMsg.Security
         /// <returns>Crypted Json/Baset64 Packet</returns>
         public static string EncryptPacket(Packet packet, string password)
         {
-            string json_packet = JsonConvert.SerializeObject(packet);
-            byte[] iv = Encryption.GenerateIV();
-            byte[] crypted_packet = Encryption.Encrypt(json_packet, Encryption.CreateKey(password), iv);
             try
             {
-                crypted_packet = Encryption.Encrypt(json_packet, Encryption.CreateKey(password), iv);
+                string json_packet = JsonConvert.SerializeObject(packet);
+                byte[] iv = Encryption.GenerateIV();
+                byte[] crypted_packet = Encryption.Encrypt(json_packet, Encryption.CreateKey(password), iv);
+                try
+                {
+                    crypted_packet = Encryption.Encrypt(json_packet, Encryption.CreateKey(password), iv);
+                }
+                catch
+                {
+                    throw new Exception("Can't crypt packet. Something is wrong.");
+                }
+
+                using (BinaryWriter binaryWriter = new BinaryWriter(new MemoryStream()))
+                {
+                    binaryWriter.Write(crypted_packet);
+                    binaryWriter.Write(iv);
+
+                    using (BinaryReader binaryReader = new BinaryReader(binaryWriter.BaseStream))
+                    {
+                        binaryReader.BaseStream.Position = 0;
+                        return Convert.ToBase64String(binaryReader.ReadBytes(crypted_packet.Length + iv.Length));
+                    }
+                }
             }
             catch
             {
-                throw new Exception("Can't crypt packet. Something is wrong.");
-            }
-
-            using (BinaryWriter binaryWriter = new BinaryWriter(new MemoryStream()))
-            {
-                binaryWriter.Write(crypted_packet);
-                binaryWriter.Write(iv);
-
-                using(BinaryReader binaryReader = new BinaryReader(binaryWriter.BaseStream))
-                {
-                    binaryReader.BaseStream.Position = 0;
-                    return Convert.ToBase64String(binaryReader.ReadBytes(crypted_packet.Length + iv.Length));
-                }
+                return string.Empty;
             }
         }
 
@@ -50,30 +57,38 @@ namespace ShadeMsg.Security
         /// <returns>Just a packet</returns>
         public static Packet DecryptPacket(string data, string password)
         {
-            byte[] crypted_byte_packet_with_iv = Convert.FromBase64String(data);
-
-            using(BinaryWriter binaryWriter = new BinaryWriter(new MemoryStream()))
+            try
             {
-                binaryWriter.Write(crypted_byte_packet_with_iv);
+                byte[] crypted_byte_packet_with_iv = Convert.FromBase64String(data);
 
-                using(BinaryReader binaryReader = new BinaryReader(binaryWriter.BaseStream))
+                using (BinaryWriter binaryWriter = new BinaryWriter(new MemoryStream()))
                 {
-                    binaryReader.BaseStream.Position = 0;
-                    byte[] clear_byte_packet = binaryReader.ReadBytes(crypted_byte_packet_with_iv.Length - 16);
-                    byte[] iv = binaryReader.ReadBytes(16);
+                    binaryWriter.Write(crypted_byte_packet_with_iv);
 
-                    try
+                    using (BinaryReader binaryReader = new BinaryReader(binaryWriter.BaseStream))
                     {
-                        string decrypted_json = Encryption.Decrypt(clear_byte_packet, Encryption.CreateKey(password), iv);
-                        return JsonConvert.DeserializeObject<Packet>(decrypted_json);
+                        binaryReader.BaseStream.Position = 0;
+                        byte[] clear_byte_packet = binaryReader.ReadBytes(crypted_byte_packet_with_iv.Length - 16);
+                        byte[] iv = binaryReader.ReadBytes(16);
+
+                        try
+                        {
+                            string decrypted_json = Encryption.Decrypt(clear_byte_packet, Encryption.CreateKey(password), iv);
+                            return JsonConvert.DeserializeObject<Packet>(decrypted_json);
+                        }
+                        catch
+                        {
+                            throw new Exception("Can't Decrypt packet. Wrong password or input data");
+                        }
+
                     }
-                    catch
-                    {
-                        throw new Exception("Can't Decrypt packet. Wrong password or input data");
-                    }
-                    
                 }
             }
+            catch(Exception e)
+            {
+                return Packet.Empty;
+            }
+            
         }
     }
 }

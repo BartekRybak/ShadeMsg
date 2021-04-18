@@ -6,7 +6,7 @@ using System.Text;
 
 namespace ShadeMsg.Security
 { 
-    class Encryption
+    public class Encryption
     {
         public static byte[] Encrypt(string data, byte[] key, byte[] IV)
         {
