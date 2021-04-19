@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Threading;
 using ShadeMsg.Network;
 using ShadeMsg.Security;
+using ShadeMsg.Network.Packets;
 
 namespace ShadeMsg_Server.Network
 {
@@ -57,7 +58,6 @@ namespace ShadeMsg_Server.Network
                 {
                     byte[] data = Encoding.UTF8.GetBytes(PacketEncryption.EncryptPacket(packet, password));
                     socket.Send(data);
-                    Console.WriteLine(">> {0}", packet.data);
                 }
             }
         }

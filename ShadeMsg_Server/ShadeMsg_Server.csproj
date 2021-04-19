@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="SQLite" Version="3.13.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\ShadeMsg\ShadeMsg.csproj" />
   </ItemGroup>
 

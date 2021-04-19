@@ -4,6 +4,7 @@ using System.Text;
 using ShadeMsg.Network;
 using Newtonsoft.Json;
 using System.IO;
+using ShadeMsg.Network.Packets;
 
 namespace ShadeMsg.Security
 {

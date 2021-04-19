@@ -6,6 +6,7 @@ using ShadeMsg_Server.Network;
 using System.Threading;
 using System.Net.Sockets;
 using System.Collections.Generic;
+using ShadeMsg.Network.Packets;
 
 namespace ShadeMsg_Server
 {
@@ -13,11 +14,10 @@ namespace ShadeMsg_Server
     {
         static List<Client> clients = new List<Client>();
         static readonly string password = "1234";
+        static Server server = new Server(8001, password);
 
         static void Main(string[] args)
         {
-            Server server = new Server(8001, password);
-
             Console.WriteLine("Starting Server..");
             server.Start();
             Console.Write("Done!\n");
@@ -25,14 +25,7 @@ namespace ShadeMsg_Server
             server.NewSocketConnected += Server_NewSocketConnected;
 
             while (true) { 
-                if(clients.Count > 0)
-                {
-                    foreach (Client client in clients.ToArray())
-                    {
-                        string text = Console.ReadLine();
-                        server.Send(new Packet() { data = text }, client);
-                    }
-                }
+                
                 Thread.Sleep(1000); 
             } 
         }
@@ -73,11 +66,33 @@ namespace ShadeMsg_Server
         /// </summary>
         /// <param name="packet"></param>
         /// <param name="socket"></param>
-        private static void Client_NewPacket(Packet packet, Socket socket)
+        private static void Client_NewPacket(Packet packet, Client client)
         {
             if(packet != Packet.Empty)
             {
-                Console.WriteLine("{0} : {1}", socket.RemoteEndPoint.ToString(), packet.data);
+                if(packet.name == "nick")
+                {
+                    client.nick = packet.GetArgument("nick").value;
+                }
+
+                if(packet.name == "msg")
+                {
+                    foreach (Client _client in clients.ToArray())
+                    {
+                        if(_client != client)
+                        {
+                            server.Send(new Packet()
+                            {
+                                name = "msg",
+                                args = new Argument[] {
+                                new Argument("text",packet.GetArgument("text").value),
+                                new Argument("nick",client.nick)
+                            }
+                            }, _client);
+                        }
+                    }
+                    Console.WriteLine("{0} : {1}", client.nick, packet.GetArgument("text").value);
+                }
             }
         }
     }

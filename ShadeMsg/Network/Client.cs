@@ -9,6 +9,7 @@ using System.Net.Sockets;
 using System.ComponentModel;
 using System.Threading;
 using System.IO;
+using ShadeMsg.Network.Packets;
 
 namespace ShadeMsg.Network
 {
@@ -63,7 +64,7 @@ namespace ShadeMsg.Network
         {
             while(true)
             {
-                if(tcpClient.Connected/*networkStream.DataAvailable*/)
+                if(tcpClient.Connected)
                 {
                     byte[] data = new byte[1024];
                     Stream stream = tcpClient.GetStream();
