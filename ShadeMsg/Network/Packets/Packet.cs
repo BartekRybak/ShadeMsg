@@ -49,5 +49,16 @@ namespace ShadeMsg.Network.Packets
                 return new Packet();
             }
         }
+
+        public override string ToString()
+        {
+            string text = "Name:" + name + "\n";
+            
+            foreach(Argument arg in args)
+            {
+                text += "[" + arg.name + "] - [" + arg.value + "] \n";
+            }
+            return text;
+        }
     }
 }

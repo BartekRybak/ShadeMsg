@@ -22,12 +22,15 @@ namespace ShadeMsg.Network
         private NetworkStream networkStream;
         private BackgroundWorker background_receive;
 
+        // New Packet
         public delegate void NewPacket_Delegate(Packet packet);
         public event NewPacket_Delegate NewPacket;
 
-        // Event: Connected;
-        // Event: NewMessageFromServer
-        // Event: ConnectionEnd
+        // storage for last packets from server
+        private int packetBufforSize = 64;
+        public List<Packet> lastPackets = new List<Packet>();
+
+        public Client() { }
 
         public Client(string server,int port,string password)
         {
@@ -38,6 +41,9 @@ namespace ShadeMsg.Network
             background_receive = new BackgroundWorker();
         }
 
+        /// <summary>
+        /// Connect to server
+        /// </summary>
         public void Connect()
         {
             while(!tcpClient.Connected)
@@ -46,13 +52,7 @@ namespace ShadeMsg.Network
                 {
                     tcpClient.Connect(server, port);
                 }
-                catch
-                {
-
-                }
-                
-                
-                
+                catch { }
                 Thread.Sleep(1000);
             }
             networkStream = tcpClient.GetStream();
@@ -60,6 +60,9 @@ namespace ShadeMsg.Network
             background_receive.RunWorkerAsync();
         }
 
+        /// <summary>
+        /// Background async packet listener
+        /// </summary>
         private void Background_receive_DoWork(object sender, DoWorkEventArgs e)
         {
             while(true)
@@ -69,15 +72,50 @@ namespace ShadeMsg.Network
                     byte[] data = new byte[1024];
                     Stream stream = tcpClient.GetStream();
                     int k = stream.Read(data, 0, data.Length);
-                    NewPacket(PacketEncryption.DecryptPacket(Encoding.UTF8.GetString(data).Trim('\0'), password));
+                    Packet newPacket = PacketEncryption.DecryptPacket(Encoding.UTF8.GetString(data).Trim('\0'), password);
+
+                    lastPackets.Add(newPacket);
+                    NewPacket(newPacket);
                 }
-                Thread.Sleep(1000);
+                Thread.Sleep(100);
             }
         }
 
+        /// <summary>
+        /// Send packet and wait for response
+        /// </summary>
+        public Packet Request(Packet packet)
+        {
+            Send(packet);
+            Thread.Sleep(100);
+            bool found = false;
+            Packet resPacket = new Packet();
+            while(!found)
+            {
+                foreach(Packet _packet in lastPackets.ToArray())
+                {
+                    if(packet.name == _packet.name)
+                    {
+                        if(packet.GetArgument("type").value == "reponse")
+                        {
+                            Packet res_packet = _packet;
+                            lastPackets.Remove(_packet);
+                            found = true;
+                            resPacket = res_packet;
+                        }
+                    }
+                }
+                Thread.Sleep(100);
+            }
+            return resPacket;
+        }
+
+        /// <summary>
+        /// Just send a packet
+        /// </summary>
         public void Send(Packet packet)
         {
-            if(tcpClient.Connected)
+            if (tcpClient.Connected)
             {
                 byte[] data = Encoding.UTF8.GetBytes(PacketEncryption.EncryptPacket(packet, password));
                 networkStream.Write(data, 0, data.Length);

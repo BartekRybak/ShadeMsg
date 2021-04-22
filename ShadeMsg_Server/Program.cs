@@ -7,17 +7,23 @@ using System.Threading;
 using System.Net.Sockets;
 using System.Collections.Generic;
 using ShadeMsg.Network.Packets;
-
+using ShadeMsg_Server.Core.User;
+using Microsoft.Data.Sqlite;
+using System.Data.SQLite;
+using ShadeMsg_Server.DataBase;
 namespace ShadeMsg_Server
 {
     class Program
     {
         static List<Client> clients = new List<Client>();
         static readonly string password = "1234";
-        static Server server = new Server(8001, password);
+        public static Server server = new Server(8001, password);
 
         static void Main(string[] args)
         {
+            Test();
+            Console.Read();
+
             Console.WriteLine("Starting Server..");
             server.Start();
             Console.Write("Done!\n");
@@ -28,6 +34,15 @@ namespace ShadeMsg_Server
                 
                 Thread.Sleep(1000); 
             } 
+        }
+
+        private static void Test()
+        {
+            DB_Users.CreateNewDatabase();
+            //DB_Users.CreateNewUser("Admin", "smok20122");
+
+            //Console.WriteLine("User [Admin] Exits: {0}", DB_Users.UserExits("Admin"));
+            //Console.WriteLine("User [Admin] Auth: {0}", DB_Users.GetAuth("Admin", "smok20122"));
         }
 
         /// <summary>
@@ -65,33 +80,16 @@ namespace ShadeMsg_Server
         /// Receive new packet from 
         /// </summary>
         /// <param name="packet"></param>
-        /// <param name="socket"></param>
+        /// <param name="client"></param>
         private static void Client_NewPacket(Packet packet, Client client)
         {
             if(packet != Packet.Empty)
             {
-                if(packet.name == "nick")
-                {
-                    client.nick = packet.GetArgument("nick").value;
-                }
+                Console.WriteLine(packet.ToString());
 
-                if(packet.name == "msg")
+                if(packet.name == "register")
                 {
-                    foreach (Client _client in clients.ToArray())
-                    {
-                        if(_client != client)
-                        {
-                            server.Send(new Packet()
-                            {
-                                name = "msg",
-                                args = new Argument[] {
-                                new Argument("text",packet.GetArgument("text").value),
-                                new Argument("nick",client.nick)
-                            }
-                            }, _client);
-                        }
-                    }
-                    Console.WriteLine("{0} : {1}", client.nick, packet.GetArgument("text").value);
+                    new Register(packet,client);
                 }
             }
         }

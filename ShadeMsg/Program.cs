@@ -13,19 +13,28 @@ namespace ShadeMsg
 {
     class Program
     {
-        static string nick = string.Empty;
+        public static Client client;
 
         static void Main(string[] args)
         {
             Console.WriteLine("ShadeMSG",Color.Tomato);
             Console.WriteLine("Press any key to continue...");
+            Console.Read();
             Console.Clear();
             Console.WriteLine("Connecting..");
-            Client client = new Client("127.0.0.1", 8001,"1234");
+            client = new Client("127.0.0.1", 8001,"1234");
             client.Connect();
             client.NewPacket += Client_NewPacket;
             Console.Write(" Sucess!");
             Console.Clear();
+
+            while(true)
+            {
+                new MainMenu_Room().Show();
+            }
+
+            
+            /*
 
             Console.Write("Your Nickname: ");
             nick = Console.ReadLine();
@@ -43,19 +52,17 @@ namespace ShadeMsg
                     new Argument("text",msg_text)
                 } };
                 client.Send(msg_packet);
-
+            */
                 Thread.Sleep(100); 
             }
-        }
 
         private static void Client_NewPacket(Packet packet)
         {
             if(packet != Packet.Empty)
             {
-                if(packet.name == "msg")
-                {
-                    Console.WriteLine("{0} : {1}", packet.GetArgument("nick").value, packet.GetArgument("text").value);
-                }
+               
+                Console.WriteLine();
+                Console.WriteLine(packet.ToString());
             }
         }
     }
