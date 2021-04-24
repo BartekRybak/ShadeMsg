@@ -30,31 +30,10 @@ namespace ShadeMsg
 
             while(true)
             {
-                new MainMenu_Room().Show();
+                new MainMenu_Room(client).Show();
             }
 
-            
-            /*
-
-            Console.Write("Your Nickname: ");
-            nick = Console.ReadLine();
-
-            Packet nick_packet = new Packet() { name = "nick", args = new Argument[] { 
-                new Argument("nick",nick)
-            } };
-
-            client.Send(nick_packet);
-
-            while (true) {
-                string msg_text = Console.ReadLine();
-
-                Packet msg_packet = new Packet() { name = "msg",args = new Argument[] { 
-                    new Argument("text",msg_text)
-                } };
-                client.Send(msg_packet);
-            */
-                Thread.Sleep(100); 
-            }
+        }
 
         private static void Client_NewPacket(Packet packet)
         {

@@ -1,0 +1,2 @@
+﻿popraw walidacje danych czy cos opakuj to w jaks klase bo bedzie to potrzebne penie nie raz
+logowanie nie dziala pewnie cos zjebalem banalnego ale generalnie praktycznie napisane jaki glupi blad do naprawy napewno

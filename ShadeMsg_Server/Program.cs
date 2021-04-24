@@ -15,7 +15,7 @@ namespace ShadeMsg_Server
 {
     class Program
     {
-        static List<Client> clients = new List<Client>();
+        public static List<Client> clients = new List<Client>();
         static readonly string password = "1234";
         public static Server server = new Server(8001, password);
 
@@ -39,6 +39,9 @@ namespace ShadeMsg_Server
         private static void Test()
         {
             DB_Users.CreateNewDatabase();
+           // Console.WriteLine("User ID:{0}", DB_Users.GetUserID("test1234"));
+            //DB_Users.LogIn("test1234", "test1234");
+
             //DB_Users.CreateNewUser("Admin", "smok20122");
 
             //Console.WriteLine("User [Admin] Exits: {0}", DB_Users.UserExits("Admin"));
@@ -87,9 +90,19 @@ namespace ShadeMsg_Server
             {
                 Console.WriteLine(packet.ToString());
 
+                switch(packet.name)
+                {
+                    case "register":
+                            new Register(packet, client);
+                        break;
+                    case "login":
+                        new Login(packet, client);
+                        break;
+                }
+
                 if(packet.name == "register")
                 {
-                    new Register(packet,client);
+                    
                 }
             }
         }

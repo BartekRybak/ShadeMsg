@@ -12,12 +12,11 @@ using System.Drawing;
 
 namespace ShadeMsg_Server.Network
 {
-    
-
     class Client
     {
         public string nick;
         public Color nick_color;
+        public bool logged;
 
         private string password;
         public Socket socket;
@@ -40,6 +39,7 @@ namespace ShadeMsg_Server.Network
             Random rand = new Random();
             nick = socket.RemoteEndPoint.ToString();
             nick_color = AvaliableColors[rand.Next(AvaliableColors.Length)];
+            logged = false;
 
             this.password = password;
             this.socket = socket;

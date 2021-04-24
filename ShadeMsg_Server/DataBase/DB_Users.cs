@@ -128,6 +128,38 @@ namespace ShadeMsg_Server.DataBase
             }
         }
 
+        public static bool LogIn(string nick,string password)
+        {
+            string _nick = Encryption.CreateMD5(nick);
+
+            if(GetAuth(nick,password))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public static int GetUserID(string nick)
+        {
+            SQLiteConnection sql = GetConnection();
+
+            SQLiteCommand cmd = new SQLiteCommand(sql) { 
+                CommandText = "SELECT * FROM Users" 
+            };
+            
+            using(SQLiteDataReader reader = cmd.ExecuteReader())
+            {
+                while(reader.Read())
+                {
+                    if((string)reader["Nick"] == Encryption.CreateMD5(nick))
+                    {
+                        return Convert.ToInt32(reader["ID"]);
+                    }
+                }
+            }
+            return 0;
+        }
+
         /// <summary>
         /// Get database connection
         /// </summary>

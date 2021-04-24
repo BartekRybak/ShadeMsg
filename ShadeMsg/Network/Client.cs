@@ -26,9 +26,8 @@ namespace ShadeMsg.Network
         public delegate void NewPacket_Delegate(Packet packet);
         public event NewPacket_Delegate NewPacket;
 
-        // storage for last packets from server
-        private int packetBufforSize = 64;
-        public List<Packet> lastPackets = new List<Packet>();
+        // logged
+        public bool logged;
 
         public Client() { }
 
@@ -37,6 +36,7 @@ namespace ShadeMsg.Network
             this.password = password;
             this.server = server;
             this.port = port;
+            logged = false;
             tcpClient = new TcpClient();
             background_receive = new BackgroundWorker();
         }
@@ -74,40 +74,10 @@ namespace ShadeMsg.Network
                     int k = stream.Read(data, 0, data.Length);
                     Packet newPacket = PacketEncryption.DecryptPacket(Encoding.UTF8.GetString(data).Trim('\0'), password);
 
-                    lastPackets.Add(newPacket);
                     NewPacket(newPacket);
                 }
                 Thread.Sleep(100);
             }
-        }
-
-        /// <summary>
-        /// Send packet and wait for response
-        /// </summary>
-        public Packet Request(Packet packet)
-        {
-            Send(packet);
-            Thread.Sleep(100);
-            bool found = false;
-            Packet resPacket = new Packet();
-            while(!found)
-            {
-                foreach(Packet _packet in lastPackets.ToArray())
-                {
-                    if(packet.name == _packet.name)
-                    {
-                        if(packet.GetArgument("type").value == "reponse")
-                        {
-                            Packet res_packet = _packet;
-                            lastPackets.Remove(_packet);
-                            found = true;
-                            resPacket = res_packet;
-                        }
-                    }
-                }
-                Thread.Sleep(100);
-            }
-            return resPacket;
         }
 
         /// <summary>
