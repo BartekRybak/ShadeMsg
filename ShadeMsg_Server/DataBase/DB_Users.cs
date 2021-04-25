@@ -7,11 +7,11 @@ using System.IO;
 
 namespace ShadeMsg_Server.DataBase
 {
-    class DB_Users
+    class DB_Users : DB
     {
-        private static readonly string db_path = "DataBase/Users.db";
+        private static readonly string db_path = DB_PATHS["Users"];
 
-        private static readonly string table_query = @"CREATE TABLE IF NOT EXISTS [Users] (
+        private static readonly string default_table = @"CREATE TABLE IF NOT EXISTS [Users] (
                           [ID] INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
                           [Nick] VARCHAR(2048)  NULL,
                           [Key] VARCHAR(2048)  NULL,
@@ -19,23 +19,16 @@ namespace ShadeMsg_Server.DataBase
                           )";
 
         /// <summary>
-        /// Delete old and create new users database
+        /// Delete old and create new table from default query
         /// </summary>
-        public static void CreateNewDatabase()
+        public override void ResetTable(string dbName, string table, string tablequery)
         {
-            if (File.Exists(db_path)) { File.Delete(db_path); }
-            SQLiteConnection.CreateFile(db_path);
-
-            SQLiteCommand cmd = new SQLiteCommand(GetConnection())
-            { CommandText = table_query };
-            cmd.ExecuteNonQuery();
+            base.ResetTable(dbName, table, tablequery);
         }
 
         /// <summary>
         /// Create new user
         /// </summary>
-        /// <param name="nick">user nick</param>
-        /// <param name="password">user password</param>
         public static void CreateNewUser(string nick,string password)
         {
             nick = Encryption.CreateMD5(nick);
@@ -44,7 +37,7 @@ namespace ShadeMsg_Server.DataBase
             byte[] userKey = Encryption.CreateKey(password);
             string crypted_nick = Convert.ToBase64String(Encryption.Encrypt(nick, userKey, iv));
 
-            SQLiteConnection sql = GetConnection();
+            SQLiteConnection sql = GetConnection(db_path);
             SQLiteCommand cmd = new SQLiteCommand(sql)
             {
                 CommandText = "INSERT INTO Users (Nick,Key,IV) Values ('" + nick + "','" + crypted_nick + "','" + Convert.ToBase64String(iv) + "')"
@@ -61,7 +54,7 @@ namespace ShadeMsg_Server.DataBase
         {
             nick = Encryption.CreateMD5(nick);
 
-            SQLiteConnection sql = GetConnection();
+            SQLiteConnection sql = GetConnection(db_path);
             SQLiteCommand cmd = new SQLiteCommand(sql)
             {
                 CommandText = "Select * FROM Users"
@@ -89,7 +82,7 @@ namespace ShadeMsg_Server.DataBase
         public static bool GetAuth(string nick,string password)
         {
             nick = Encryption.CreateMD5(nick);
-            SQLiteConnection sql = GetConnection();
+            SQLiteConnection sql = GetConnection(db_path);
             SQLiteCommand cmd = new SQLiteCommand(sql)
             {
                 CommandText = "Select * FROM Users"
@@ -128,20 +121,21 @@ namespace ShadeMsg_Server.DataBase
             }
         }
 
+        /// <summary>
+        /// Loggin
+        /// </summary>
         public static bool LogIn(string nick,string password)
         {
-            string _nick = Encryption.CreateMD5(nick);
-
-            if(GetAuth(nick,password))
-            {
-                return true;
-            }
-            return false;
+            return GetAuth(Encryption.CreateMD5(nick), password);
         }
+ 
 
+        /// <summary>
+        /// Get user ID
+        /// </summary>
         public static int GetUserID(string nick)
         {
-            SQLiteConnection sql = GetConnection();
+            SQLiteConnection sql = GetConnection(db_path);
 
             SQLiteCommand cmd = new SQLiteCommand(sql) { 
                 CommandText = "SELECT * FROM Users" 
@@ -153,21 +147,13 @@ namespace ShadeMsg_Server.DataBase
                 {
                     if((string)reader["Nick"] == Encryption.CreateMD5(nick))
                     {
-                        return Convert.ToInt32(reader["ID"]);
+                        int id = Convert.ToInt32(reader["ID"]);
+                        sql.Close();
+                        return id;
                     }
                 }
             }
             return 0;
-        }
-
-        /// <summary>
-        /// Get database connection
-        /// </summary>
-        private static SQLiteConnection GetConnection()
-        {
-            SQLiteConnection sql = new SQLiteConnection("data source=" + db_path);
-            sql.Open();
-            return sql;
-        }
+        }  
     }
 }

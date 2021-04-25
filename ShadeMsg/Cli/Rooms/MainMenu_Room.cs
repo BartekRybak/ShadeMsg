@@ -20,7 +20,7 @@ namespace ShadeMsg.Cli.Rooms
             {
                 switch (Input("$>", new string[] { "/rooms", "/setting", "/test", "/exit" }))
                 {
-                    case "/rooms":
+                    case "/friends":
                         Console.WriteLine("rooms");
                         break;
                     case "/settings":
