@@ -49,12 +49,8 @@ namespace ShadeMsg_Server.DataBase
             };
             cmd.ExecuteNonQuery();
             
-
-
-            // Friends
             cmd.CommandText = "INSERT INTO Friends (Nick,FriendList,Blocked) VALUES ('"+ nick +"','','')";
             cmd.ExecuteNonQuery();
-            
             sql.Close();
         }
 
@@ -66,10 +62,7 @@ namespace ShadeMsg_Server.DataBase
             nick = Encryption.CreateMD5(nick);
 
             SQLiteConnection sql = GetConnection(db_path);
-            SQLiteCommand cmd = new SQLiteCommand(sql)
-            {
-                CommandText = "Select * FROM Users"
-            };
+            SQLiteCommand cmd = new SQLiteCommand("Select * FROM Users",sql);
 
             using(SQLiteDataReader reader = cmd.ExecuteReader())
             {
@@ -77,6 +70,7 @@ namespace ShadeMsg_Server.DataBase
                 {
                     if((string)reader["nick"] == nick)
                     {
+                        reader.Close();
                         sql.Close();
                         return true;
                     }
@@ -94,10 +88,7 @@ namespace ShadeMsg_Server.DataBase
         {
             nick = Encryption.CreateMD5(nick);
             SQLiteConnection sql = GetConnection(db_path);
-            SQLiteCommand cmd = new SQLiteCommand(sql)
-            {
-                CommandText = "Select * FROM Users"
-            };
+            SQLiteCommand cmd = new SQLiteCommand("Select * FROM Users", sql);
 
             using (SQLiteDataReader reader = cmd.ExecuteReader())
             {
@@ -116,17 +107,20 @@ namespace ShadeMsg_Server.DataBase
                         }
                         catch
                         {
+                            reader.Close();
                             sql.Close();
                             return false;
                         }
 
                         if(encrypted_nick == nick)
                         {
+                            reader.Close();
                             sql.Close();
                             return true;
                         }
                     }
                 }
+                reader.Close();
                 sql.Close();
                 return false;
             }
@@ -140,7 +134,6 @@ namespace ShadeMsg_Server.DataBase
             return GetAuth(Encryption.CreateMD5(nick), password);
         }
  
-
         /// <summary>
         /// Get user ID
         /// </summary>
@@ -161,7 +154,6 @@ namespace ShadeMsg_Server.DataBase
                         int id = Convert.ToInt32(reader["ID"]);
                         reader.Close();
                         sql.Close();
-                        
                         return id;
                     }
                 }

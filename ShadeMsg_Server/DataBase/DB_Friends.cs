@@ -34,10 +34,7 @@ namespace ShadeMsg_Server.DataBase
             Console.WriteLine("Done!");
         }
 
-        /// <summary>
-        /// Add Friend
-        /// </summary>
-        public static void AddFriend(string nick, string friend)
+        private static string GetFriendsAsString(string nick)
         {
             SQLiteConnection sql = GetConnection(db_path);
             SQLiteCommand cmd = new SQLiteCommand(sql)
@@ -45,7 +42,7 @@ namespace ShadeMsg_Server.DataBase
                 CommandText = "SELECT * FROM Friends"
             };
 
-            List<string> OldfriendList = new List<string>();
+            string friends = string.Empty;
 
             using (SQLiteDataReader reader = cmd.ExecuteReader())
             {
@@ -53,19 +50,32 @@ namespace ShadeMsg_Server.DataBase
                 {
                     if ((string)reader["Nick"] == Encryption.CreateMD5(nick))
                     {
-                        string friends = (string)reader["FriendList"];
-
-                        foreach (string f in friends.Split('+'))
-                        {
-                            if (f != string.Empty)
-                            {
-                                OldfriendList.Add(f);
-                            }
-
-                        }
+                        friends = (string)reader["FriendList"];
                     }
                 }
                 reader.Close();
+            }
+            sql.Close();
+
+            return friends;
+        }
+
+        /// <summary>
+        /// Add Friend
+        /// </summary>
+        public static void AddFriend(string nick, string friend)
+        {
+            SQLiteConnection sql = GetConnection(db_path);
+            List<string> OldfriendList = new List<string>();
+            int newFriendId = DB_Users.GetUserID(friend);
+            string friends = GetFriendsAsString(nick);
+            foreach (string f in friends.Split('+'))
+            {
+                if (f != string.Empty)
+                {
+                    OldfriendList.Add(f);
+                }
+
             }
             string newFriendsString = string.Empty;
 
@@ -73,16 +83,34 @@ namespace ShadeMsg_Server.DataBase
             {
                 foreach (string oldF in OldfriendList.ToArray())
                 {
-                    newFriendsString += oldF + "+";
+                    if(Convert.ToInt32(oldF) != newFriendId)
+                    {
+                        newFriendsString += oldF + "+";
+                    }
                 }
             }
 
-            newFriendsString += DB_Users.GetUserID(friend);
-
+            newFriendsString += newFriendId;
+            SQLiteCommand cmd = new SQLiteCommand(sql);
             cmd.CommandText = "UPDATE Friends SET FriendList='" + newFriendsString + "' WHERE Nick='" + Encryption.CreateMD5(nick) + "'";
             cmd.ExecuteNonQuery();
             sql.Close();
-            Console.WriteLine("TEST DONE");
+        }
+
+        /// <summary>
+        /// Its user friend?
+        /// </summary>
+        public static bool FriendExits(string nick,string friend)
+        {
+            string friends = GetFriendsAsString(nick);
+            int friend_id = DB_Users.GetUserID(friend);
+
+            bool exits = false;
+            foreach(string f in friends.Split('+'))
+            {
+                if(Convert.ToInt32(f) == friend_id) { exits = true; }
+            }
+            return exits;
         }
 
         /// <summary>
@@ -98,35 +126,7 @@ namespace ShadeMsg_Server.DataBase
         /// </summary>
         public static int[] GetFriendsList(string nick)
         {
-            SQLiteConnection sql = GetConnection(db_path);
-            SQLiteCommand cmd = new SQLiteCommand(sql) {
-                CommandText = "SELECT * FROM Friends"
-            };
-
-            List<int> friendList = new List<int>();
-
-            using(SQLiteDataReader reader = cmd.ExecuteReader())
-            {
-                while(reader.Read())
-                {
-                    if((string)reader["Nick"] == Encryption.CreateMD5(nick))
-                    {
-                        string friends = (string)reader["FriendList"];
-
-                        foreach(string f in friends.Split(','))
-                        {
-                            if(f != string.Empty)
-                            {
-                                friendList.Add(Convert.ToInt32(f));
-                            }
-                            
-                        }
-                    }
-                }
-                reader.Close();
-            }
-            sql.Close();
-            return friendList.ToArray();
+            return null;
         }
 
         /// <summary>

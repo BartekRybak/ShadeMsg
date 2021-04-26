@@ -47,7 +47,7 @@ namespace ShadeMsg_Server
               //DB_Users.CreateNewUser("test3", "123456789");
              // DB_Users.CreateNewUser("test4", "123456789");
             //  DB_Friends.AddFriend("test1", "test2");
-            DB_Friends.AddFriendTest("test1", "test2");
+            DB_Friends.AddFriend("test1", "test3");
             Console.WriteLine("Done!");
            // Console.WriteLine("User ID:{0}", DB_Users.GetUserID("test1234"));
             //DB_Users.LogIn("test1234", "test1234");
