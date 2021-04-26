@@ -8,12 +8,6 @@ namespace ShadeMsg_Server.DataBase
 {
     class DB
     {
-        private static readonly string DB_DIRECTORY = "DataBase/";
-
-        public static Dictionary<string, string> DB_PATHS = new Dictionary<string, string>() {
-            { "User",DB_DIRECTORY }
-        };
-
         /// <summary>
         /// Get database connection
         /// </summary>
@@ -27,9 +21,8 @@ namespace ShadeMsg_Server.DataBase
         /// <summary>
         /// Reset table to empty default
         /// </summary>
-        public virtual void ResetTable(string dbName,string table,string tablequery)
+        protected static void ResetTable(string dbName,string table,string tablequery)
         {
-            DropTable(dbName, table);
             CreateNewTable(dbName, tablequery);
         }
 
@@ -49,17 +42,6 @@ namespace ShadeMsg_Server.DataBase
         {
             SQLiteConnection sql = GetConnection(db_name);
             SQLiteCommand cmd = new SQLiteCommand(sql) { CommandText = query };
-            cmd.ExecuteNonQuery();
-            sql.Close();
-        }
-
-        /// <summary>
-        /// Drop(Delete) table
-        /// </summary>
-        protected static void DropTable(string dbName,string tableName)
-        {
-            SQLiteConnection sql = GetConnection(dbName);
-            SQLiteCommand cmd = new SQLiteCommand(sql) { CommandText = "DROP TABLE " + tableName };
             cmd.ExecuteNonQuery();
             sql.Close();
         }

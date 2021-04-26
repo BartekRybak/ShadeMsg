@@ -9,7 +9,7 @@ namespace ShadeMsg_Server.DataBase
 {
     class DB_Users : DB
     {
-        private static readonly string db_path = DB_PATHS["Users"];
+        private static readonly string db_path = db_path = "DataBase/Users.db";
 
         private static readonly string default_table = @"CREATE TABLE IF NOT EXISTS [Users] (
                           [ID] INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -18,16 +18,21 @@ namespace ShadeMsg_Server.DataBase
                           [IV] VARCHAR(2048)
                           )";
 
-        /// <summary>
-        /// Delete old and create new table from default query
-        /// </summary>
-        public override void ResetTable(string dbName, string table, string tablequery)
+        public static void CreateEmptyTable()
         {
-            base.ResetTable(dbName, table, tablequery);
+            SQLiteConnection sql = GetConnection(db_path);
+
+            SQLiteCommand cmd = new SQLiteCommand(sql)
+            {
+                CommandText = default_table
+            };
+            cmd.ExecuteNonQuery();
+            sql.Close();
         }
 
         /// <summary>
         /// Create new user
+        /// Register
         /// </summary>
         public static void CreateNewUser(string nick,string password)
         {
@@ -40,16 +45,22 @@ namespace ShadeMsg_Server.DataBase
             SQLiteConnection sql = GetConnection(db_path);
             SQLiteCommand cmd = new SQLiteCommand(sql)
             {
-                CommandText = "INSERT INTO Users (Nick,Key,IV) Values ('" + nick + "','" + crypted_nick + "','" + Convert.ToBase64String(iv) + "')"
+                CommandText = "INSERT INTO Users (Nick,Key,IV) VALUES ('" + nick + "','" + crypted_nick + "','" + Convert.ToBase64String(iv) + "')"
             };
-
             cmd.ExecuteNonQuery();
+            
+
+
+            // Friends
+            cmd.CommandText = "INSERT INTO Friends (Nick,FriendList,Blocked) VALUES ('"+ nick +"','','')";
+            cmd.ExecuteNonQuery();
+            
             sql.Close();
         }
 
         /// <summary>
         /// Check user exits
-        /// </summary>
+         /// </summary>
         public static bool UserExits(string nick)
         {
             nick = Encryption.CreateMD5(nick);
@@ -148,11 +159,14 @@ namespace ShadeMsg_Server.DataBase
                     if((string)reader["Nick"] == Encryption.CreateMD5(nick))
                     {
                         int id = Convert.ToInt32(reader["ID"]);
+                        reader.Close();
                         sql.Close();
+                        
                         return id;
                     }
                 }
             }
+            sql.Close();
             return 0;
         }  
     }

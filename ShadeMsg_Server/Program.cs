@@ -36,9 +36,19 @@ namespace ShadeMsg_Server
             } 
         }
 
+
+
         private static void Test()
         {
-            DB_Users.CreateNewDatabase();
+            // DB_Users.CreateEmptyTable();
+            // DB_Friends.CreateEmptyTable();
+            // DB_Users.CreateNewUser("test1", "123456789");
+            //  DB_Users.CreateNewUser("test2", "123456789");
+              //DB_Users.CreateNewUser("test3", "123456789");
+             // DB_Users.CreateNewUser("test4", "123456789");
+            //  DB_Friends.AddFriend("test1", "test2");
+            DB_Friends.AddFriendTest("test1", "test2");
+            Console.WriteLine("Done!");
            // Console.WriteLine("User ID:{0}", DB_Users.GetUserID("test1234"));
             //DB_Users.LogIn("test1234", "test1234");
 
