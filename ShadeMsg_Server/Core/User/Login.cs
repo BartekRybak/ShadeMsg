@@ -4,9 +4,8 @@ using System.Text;
 using ShadeMsg.Network.Packets;
 using ShadeMsg_Server.Network;
 using ShadeMsg_Server.DataBase;
-using ShadeMsg.Network.Packets;
 
-namespace ShadeMsg_Server.Core.User
+namespace ShadeMsg_Server.Core
 {
     class Login
     {

@@ -15,11 +15,10 @@ namespace ShadeMsg_Server.DataBase
                                 [FriendList] VARCHAR(2048) NULL,
                                 [Blocked] VARCHAR(2048) NULL
                                 )";
-        public static void Reset()
-        {
-            ResetTable(db_path, "Friends", default_table);
-        }
 
+        /// <summary>
+        /// Create empty table
+        /// </summary>
         public static void CreateEmptyTable()
         {
             SQLiteConnection sql = GetConnection(db_path);
@@ -29,11 +28,10 @@ namespace ShadeMsg_Server.DataBase
                 };
             cmd.ExecuteNonQuery();
             sql.Close();
-            
-
-            Console.WriteLine("Done!");
         }
 
+        /// <summary>
+        /// get FriendList field
         private static string GetFriendsAsString(string nick)
         {
             SQLiteConnection sql = GetConnection(db_path);
@@ -116,16 +114,59 @@ namespace ShadeMsg_Server.DataBase
         /// <summary>
         /// Dell Friend
         /// </summary>
-        public static void DellFriend(string nick,string fiendNick)
+        public static void DellFriend(string nick,string friend)
         {
-            
+            if(!FriendExits(nick,friend)) { return; }
+
+            SQLiteConnection sql = GetConnection(db_path);
+            string friends = GetFriendsAsString(nick);
+            int friend_id = DB_Users.GetUserID(nick);
+            List<int> intFriends = new List<int>();
+
+            foreach(string f in friends.Split('+'))
+            {
+                intFriends.Add(Convert.ToInt32(f));
+            }
+
+            for(int i=0; i < intFriends.ToArray().Length;i++)
+            {
+                if(intFriends[i] == friend_id)
+                {
+                    intFriends.RemoveAt(i);
+                }
+            }
+
+            friends = string.Empty;
+            if (intFriends.Count <= 0)
+            {
+                friends = friend_id.ToString();
+            }
+            else
+            {
+                foreach (int f in intFriends)
+                {
+                    friends += f.ToString() + '+';
+                }
+                friends += friend_id.ToString();
+            }
+
+            SQLiteCommand cmd = new SQLiteCommand("UPDATE Friends SET FriendList='" + friends + "' WHERE Nick='" + Encryption.CreateMD5(nick) + "'", sql);
+            cmd.ExecuteNonQuery();
         }
 
         /// <summary>
         /// Get Friends List
         /// </summary>
-        public static int[] GetFriendsList(string nick)
+        public static string[] GetFriendsList(string nick)
         {
+            string friends = GetFriendsAsString(nick);
+            List<string> friendsList = new List<string>();
+
+            foreach(string f in GetFriendsAsString(nick).Split('+'))
+            {
+                friendsList.Add();
+            }
+
             return null;
         }
 

@@ -18,6 +18,9 @@ namespace ShadeMsg_Server.DataBase
                           [IV] VARCHAR(2048)
                           )";
 
+        /// <summary>
+        /// Create empty table
+        /// </summary>
         public static void CreateEmptyTable()
         {
             SQLiteConnection sql = GetConnection(db_path);
@@ -28,6 +31,30 @@ namespace ShadeMsg_Server.DataBase
             };
             cmd.ExecuteNonQuery();
             sql.Close();
+        }
+
+        /// <summary>
+        /// Get user from id
+        /// </summary>
+        public static string GetNickFromID(int id)
+        {
+            SQLiteConnection sql = GetConnection(db_path);
+            SQLiteCommand cmd = new SQLiteCommand("SELECT * FROM Users WHERE ID='" + id + "'", sql);
+            
+            using(SQLiteDataReader reader = cmd.ExecuteReader())
+            {
+                while(reader.Read())
+                {
+                    if((string)reader["ID"] == id.ToString())
+                    {
+                        string nick = (string)reader["Nick"];
+                        reader.Close();
+                        sql.Close();
+                        return nick;
+                    }
+                }
+            }
+            return string.Empty;
         }
 
         /// <summary>
