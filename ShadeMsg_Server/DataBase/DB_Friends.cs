@@ -6,6 +6,10 @@ using ShadeMsg.Security;
 
 namespace ShadeMsg_Server.DataBase
 {
+    /*
+     * Current working on DelFriend()
+     */
+
     class DB_Friends : DB
     {
         private static readonly string db_path = "DataBase/Users.db";
@@ -18,6 +22,7 @@ namespace ShadeMsg_Server.DataBase
 
         /// <summary>
         /// Create empty table
+        /// work!
         /// </summary>
         public static void CreateEmptyTable()
         {
@@ -59,7 +64,16 @@ namespace ShadeMsg_Server.DataBase
         }
 
         /// <summary>
+        /// Users are friends
+        /// </summary>
+        public static bool UsersAreFriends(string nick1,string nick2)
+        {
+            return false;
+        }
+
+        /// <summary>
         /// Add Friend
+        /// work !
         /// </summary>
         public static void AddFriend(string nick, string friend)
         {
@@ -97,6 +111,7 @@ namespace ShadeMsg_Server.DataBase
 
         /// <summary>
         /// Its user friend?
+        /// work!
         /// </summary>
         public static bool FriendExits(string nick,string friend)
         {
@@ -113,45 +128,35 @@ namespace ShadeMsg_Server.DataBase
 
         /// <summary>
         /// Dell Friend
+        /// work!
         /// </summary>
         public static void DellFriend(string nick,string friend)
         {
-            if(!FriendExits(nick,friend)) { return; }
+            string oldFriends = GetFriendsAsString(nick);
+            int friend_id = DB_Users.GetUserID(friend);
+            List<int> newFriendsInt = new List<int>();
+            string newFriendsField = string.Empty;
 
+            foreach(string f in oldFriends.Split('+'))
+            {
+                int _f = Convert.ToInt32(f);
+                if(_f != friend_id) { newFriendsInt.Add(_f); }
+            }
+
+            for(int i =0;i < newFriendsInt.Count; i++)
+            {
+                if(i > 0) { newFriendsField += '+'; }
+                newFriendsField += newFriendsInt[i].ToString();
+            }
+
+            Console.WriteLine(newFriendsField);
+            Console.ReadKey();
             SQLiteConnection sql = GetConnection(db_path);
-            string friends = GetFriendsAsString(nick);
-            int friend_id = DB_Users.GetUserID(nick);
-            List<int> intFriends = new List<int>();
-
-            foreach(string f in friends.Split('+'))
-            {
-                intFriends.Add(Convert.ToInt32(f));
-            }
-
-            for(int i=0; i < intFriends.ToArray().Length;i++)
-            {
-                if(intFriends[i] == friend_id)
-                {
-                    intFriends.RemoveAt(i);
-                }
-            }
-
-            friends = string.Empty;
-            if (intFriends.Count <= 0)
-            {
-                friends = friend_id.ToString();
-            }
-            else
-            {
-                foreach (int f in intFriends)
-                {
-                    friends += f.ToString() + '+';
-                }
-                friends += friend_id.ToString();
-            }
-
-            SQLiteCommand cmd = new SQLiteCommand("UPDATE Friends SET FriendList='" + friends + "' WHERE Nick='" + Encryption.CreateMD5(nick) + "'", sql);
+            SQLiteCommand cmd = new SQLiteCommand(sql) { 
+                CommandText = "UPDATE Friends SET FriendList='" + newFriendsField + "' WHERE Nick='" + Encryption.CreateMD5(nick) + "'"
+            };
             cmd.ExecuteNonQuery();
+            sql.Close();
         }
 
         /// <summary>
@@ -164,7 +169,7 @@ namespace ShadeMsg_Server.DataBase
 
             foreach(string f in GetFriendsAsString(nick).Split('+'))
             {
-                friendsList.Add();
+             //   friendsList.Add();
             }
 
             return null;

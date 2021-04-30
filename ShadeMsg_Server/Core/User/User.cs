@@ -12,6 +12,6 @@ namespace ShadeMsg_Server.Core.User
         public byte[] key;
         public byte[] iv;
 
-        public 
+       // public 
     }
 }
