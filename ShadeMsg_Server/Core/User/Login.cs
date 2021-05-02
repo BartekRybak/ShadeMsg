@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using ShadeMsg.Network.Packets;
 using ShadeMsg_Server.Network;
-using ShadeMsg_Server.DataBase;
+using ShadeMsg_Server.DB;
 
 namespace ShadeMsg_Server.Core
 {
@@ -19,7 +19,7 @@ namespace ShadeMsg_Server.Core
 
             string error = string.Empty;
 
-            if(DB_Users.LogIn(nick,password))
+            if(DataBase.Users.GetAuth(nick,password))
             {
                 Console.WriteLine("logged {0}", nick);
             }

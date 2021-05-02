@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using ShadeMsg.Network.Packets;
 using ShadeMsg_Server.Network;
-using ShadeMsg_Server.DataBase;
+using ShadeMsg_Server.DB;
 
 namespace ShadeMsg_Server.Core
 {
@@ -21,9 +21,9 @@ namespace ShadeMsg_Server.Core
             string password = packet.GetArgument("password").value;
             string error = string.Empty;
 
-            if(!DB_Users.UserExits(nick))
+            if(!DataBase.Users.UserExits(nick))
             {
-                DB_Users.CreateNewUser(nick, password);
+                DataBase.Users.CreateNew(nick, password);
                 Console.WriteLine("Creatgin New user [{0}]",nick);
             }
             else

@@ -7,11 +7,10 @@ using System.Threading;
 using System.Net.Sockets;
 using System.Collections.Generic;
 using ShadeMsg.Network.Packets;
-using ShadeMsg_Server.Core.User;
+using ShadeMsg_Server.Core;
 using Microsoft.Data.Sqlite;
 using System.Data.SQLite;
-using ShadeMsg_Server.DataBase;
-using ShadeMsg_Server.Core;
+using ShadeMsg_Server.DB;
 namespace ShadeMsg_Server
 {
     class Program
@@ -41,27 +40,17 @@ namespace ShadeMsg_Server
 
         private static void Test()
         {
+            //SQLiteConnection.CreateFile("DataBase/Users.db");
+           // DataBase.Users.CreateEmptyTables();
+            //DataBase.Users.CreateNew("test1", "qwerty");
+
             /* RESET
-                SQLiteConnection.CreateFile("DataBase/Users.db");
+            SQLiteConnection.CreateFile("DataBase/Users.db");
                 DB_Users.CreateEmptyTable();
                 DB_Friends.CreateEmptyTable();
-             */
-
-            /* TEST USERS
-                DB_Users.CreateNewUser("test1", "123456789");
-                DB_Users.CreateNewUser("test2", "123456789");
             */
 
-            /* FRIENDS
-                DB_Friends.AddFriend("test1", "test2");
-                DB_Friends.AddFriend("test2", "test1");
-            */
-            //DB_Users.CreateNewUser("test4", "1245125");
-            //DB_Friends.AddFriend("test1", "test4");
-
-            Console.WriteLine(DB_Friends.FriendExits("test1", "test2"));
-            DB_Friends.DellFriend("test1", "test2");
-            Console.WriteLine(DB_Friends.FriendExits("test1", "test2"));
+           
         }
 
         /// <summary>
