@@ -20,11 +20,12 @@ namespace ShadeMsg_Server.DB
                             )";
 
             private static readonly string default_users_table = @"CREATE TABLE IF NOT EXISTS [Users] (
-                          [id] INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                          [nick] VARCHAR(2048)  NULL,
-                          [key] VARCHAR(2048)  NULL,
-                          [iv] VARCHAR(2048)
-                          )";
+                            [id] INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                            [nick] VARCHAR(2048)  NULL,
+                            [key] VARCHAR(2048)  NULL,
+                            [iv] VARCHAR(2048) NULL,
+                            [ban] VARCHAR(2048) NULL
+                            )";
 
             public static void TEST()
             {
@@ -76,6 +77,26 @@ namespace ShadeMsg_Server.DB
                 return row;
             }
 
+            public static void SetUserInfo(string nick,UserInfo newInfo,bool withSecurityData)
+            {
+                using (SQLiteConnection sql = GetConnection(db_path))
+                {
+                    string query = string.Empty;
+                    if(withSecurityData || newInfo.key != string.Empty)
+                    {
+                        query = "UPDATE Users SET nick='" + newInfo.nick + "', key='" + newInfo.key + "', iv='" + newInfo.iv + "', ban='" + newInfo.ban + "' WHERE nick='"+nick+"'";
+                    }
+                    else
+                    {
+                        query = "UPDATE Users SET nick='" + newInfo.nick + "', ban='" + newInfo.ban + "' WHERE nick='"+nick+"'";
+                    }
+                    using (SQLiteCommand cmd = new SQLiteCommand(query,sql))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+
             public static void CreateNew(string nick, string password)
             {
                 byte[] iv = Encryption.GenerateIV();
@@ -84,7 +105,7 @@ namespace ShadeMsg_Server.DB
 
                 using (SQLiteConnection sql = GetConnection(db_path))
                 {
-                    string query = "INSERT INTO Users (nick,key,iv) VALUES ('" + nick + "','" + crypted_nick + "','" + Convert.ToBase64String(iv) + "')";
+                    string query = "INSERT INTO Users (nick,key,iv,ban) VALUES ('" + nick + "','" + crypted_nick + "','" + Convert.ToBase64String(iv) + "','FALSE')";
                     using (SQLiteCommand cmd = new SQLiteCommand(query, sql))
                     {
                         cmd.ExecuteNonQuery();
@@ -110,6 +131,11 @@ namespace ShadeMsg_Server.DB
                 }
             }
 
+            public static bool IsBanned(string nick)
+            {
+                return (GetUserInfo(nick, false).ban == "TRUE");
+            }
+
             public static bool GetAuth(string nick, string password)
             {
                 if(UserExits(nick))
@@ -129,34 +155,92 @@ namespace ShadeMsg_Server.DB
             #endregion
 
             #region Friends
-            public static FriendsInfo GetFriendsInfo(string nick)
+            public static class Friends
             {
-                FriendsInfo friendsRow = new FriendsInfo();
-                if(UserExits(nick))
+                public static FriendsInfo GetFriendsInfo(string nick)
                 {
-                    using (SQLiteConnection sql = GetConnection(db_path))
+                    FriendsInfo friendsRow = new FriendsInfo();
+                    if (UserExits(nick))
                     {
-                        string query = "SELECT * FROM Friends WHERE nick='"+ nick +"'";
-                        using (SQLiteCommand cmd = new SQLiteCommand(query, sql))
+                        using (SQLiteConnection sql = GetConnection(db_path))
                         {
-                            using (SQLiteDataReader reader = cmd.ExecuteReader())
+                            string query = "SELECT * FROM Friends WHERE nick='" + nick + "'";
+                            using (SQLiteCommand cmd = new SQLiteCommand(query, sql))
                             {
-                                if(reader.HasRows)
+                                using (SQLiteDataReader reader = cmd.ExecuteReader())
                                 {
-                                    while (reader.Read())
+                                    if (reader.HasRows)
                                     {
-                                        friendsRow.nick = nick;
-                                        friendsRow.friends = FieldToArray(reader.GetString(1), '+');
-                                        friendsRow.invites_in = FieldToArray(reader.GetString(2),'+');
-                                        friendsRow.invites_out = FieldToArray(reader.GetString(3), '+');
-                                        friendsRow.blocked = FieldToArray(reader.GetString(4),'+');
+                                        while (reader.Read())
+                                        {
+                                            friendsRow.nick = nick;
+                                            friendsRow.friends = FieldToArray(reader.GetString(1), '+');
+                                            friendsRow.invites_in = FieldToArray(reader.GetString(2), '+');
+                                            friendsRow.invites_out = FieldToArray(reader.GetString(3), '+');
+                                            friendsRow.blocked = FieldToArray(reader.GetString(4), '+');
+                                        }
                                     }
                                 }
                             }
                         }
                     }
+                    return friendsRow;
                 }
-                return friendsRow;
+
+                public static void SetFriendsInfo(string nick, FriendsInfo newInfo)
+                {
+                    if (UserExits(nick))
+                    {
+                        using (SQLiteConnection sql = GetConnection(db_path))
+                        {
+                            string friends = ArrayToField(newInfo.friends, '+');
+                            string invitesIn = ArrayToField(newInfo.invites_in, '+');
+                            string invitesOut = ArrayToField(newInfo.invites_out, '+');
+                            string blocked = ArrayToField(newInfo.blocked, '+');
+
+                            string query = "UPDATE Friends SET nick='" + nick + "', friends='" + friends + "', invites_in='" + invitesIn + "', invites_out='" + invitesOut + "', blocked='" + blocked + "' WHERE nick='" + nick + "'";
+                            using (SQLiteCommand cmd = new SQLiteCommand(query, sql))
+                            {
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+                    }
+                }
+
+                public static void AddFriend(string nick, string friend)
+                {
+                    FriendsInfo oldF = GetFriendsInfo(nick);
+                    List<string> newFriends = new List<string>();
+
+                    foreach (string f in oldF.friends)
+                    {
+                        if(f != string.Empty)
+                        {
+                            newFriends.Add(f);
+                        }
+                    }
+                    newFriends.Add(friend);
+
+                    oldF.friends = newFriends.ToArray();
+                    SetFriendsInfo(nick, oldF);
+                }
+
+                public static void DellFriend(string nick, string friend)
+                {
+                    FriendsInfo oldf = GetFriendsInfo(nick);
+                    List<string> newFriends = new List<string>();
+
+                    foreach (string f in oldf.friends)
+                    {
+                        if (f != friend)
+                        {
+                            newFriends.Add(f);
+                        }
+                    }
+
+                    oldf.friends = newFriends.ToArray();
+                    SetFriendsInfo(nick, oldf);
+                }
             }
             #endregion
         }

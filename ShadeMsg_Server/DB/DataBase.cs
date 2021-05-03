@@ -17,20 +17,20 @@ namespace ShadeMsg_Server.DB
             return sql;
         }
 
-        protected static string ArrayToField(string[] data,char separator)
+        public static string ArrayToField(string[] data,char separator)
         {
             string field = string.Empty;
 
-            if(data.Length == 1)
+            for(int i =0;i< data.Length;i++)
             {
-                field += data[0];
-            }
-            else
-            {
-                for (int i = 0; i < data.Length; i++)
+                
+                if (i < data.Length - 1)
+                {
+                    field += data[i] + separator.ToString();
+                }
+                else
                 {
                     field += data[i];
-                    if (i < data.Length - 1) { field += separator; }
                 }
             }
             return field;

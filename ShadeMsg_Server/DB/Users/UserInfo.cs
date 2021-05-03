@@ -10,6 +10,7 @@ namespace ShadeMsg_Server.DB
         public string nick;
         public string key;
         public string iv;
+        public string ban;
 
         public UserInfo()
         {
@@ -17,14 +18,16 @@ namespace ShadeMsg_Server.DB
             nick = string.Empty;
             key = string.Empty;
             iv = string.Empty;
+            ban = string.Empty;
         }
 
-        public UserInfo(string id, string nick, string key, string iv)
+        public UserInfo(string id, string nick, string key, string iv,string ban)
         {
             this.id = id;
             this.nick = nick;
             this.key = key;
             this.iv = iv;
+            this.ban = ban;
         }
 
         public override string ToString()
@@ -34,6 +37,7 @@ namespace ShadeMsg_Server.DB
             res += "nick:" + nick + "\n";
             res += "key:" + key + "\n";
             res += "iv:" + iv + "\n";
+            res += "ban:" + ban + "\n";
             return res;
         }
     }

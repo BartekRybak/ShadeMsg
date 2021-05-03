@@ -40,9 +40,8 @@ namespace ShadeMsg_Server
 
         private static void Test()
         {
-            //SQLiteConnection.CreateFile("DataBase/Users.db");
-           // DataBase.Users.CreateEmptyTables();
-            //DataBase.Users.CreateNew("test1", "qwerty");
+            //DataBase.Users.CreateNew("test1", "1234");
+           // DataBase.Users.CreateNew("test3", "1234");
 
             /* RESET
             SQLiteConnection.CreateFile("DataBase/Users.db");
@@ -50,7 +49,7 @@ namespace ShadeMsg_Server
                 DB_Friends.CreateEmptyTable();
             */
 
-           
+            Console.WriteLine("done!");
         }
 
         /// <summary>
