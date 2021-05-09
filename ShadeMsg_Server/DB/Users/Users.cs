@@ -24,7 +24,7 @@ namespace ShadeMsg_Server.DB
                             [nick] VARCHAR(2048)  NULL,
                             [key] VARCHAR(2048)  NULL,
                             [iv] VARCHAR(2048) NULL,
-                            [ban] VARCHAR(2048) NULL
+                            [ban] VARCHAR(2048) DEFAULT 'FALSE' NOT NULL
                             )";
 
             public static void TEST()
@@ -32,8 +32,11 @@ namespace ShadeMsg_Server.DB
                 Console.WriteLine(ArrayToField(new string[] { "kupa1", "kupa2", "kupa3" }, '+'));
             }
 
-            public static void CreateEmptyTables()
+            public static void NewDataBase()
             {
+                if(File.Exists(db_path)) { File.Delete(db_path); }
+                SQLiteConnection.CreateFile(db_path);
+
                 using (SQLiteConnection sql = GetConnection(db_path))
                 {
                     using (SQLiteCommand cmd = new SQLiteCommand(default_users_table, sql))
@@ -136,6 +139,20 @@ namespace ShadeMsg_Server.DB
                 return (GetUserInfo(nick, false).ban == "TRUE");
             }
 
+            public static void Ban(string nick)
+            {
+                UserInfo userinfo = GetUserInfo(nick, false);
+                userinfo.ban = "TRUE";
+                SetUserInfo(nick, userinfo, false);
+            }
+
+            public static void UnBan(string nick)
+            {
+                UserInfo userInfo = GetUserInfo(nick, false);
+                userInfo.ban = "FALSE";
+                SetUserInfo(nick, userInfo, false);
+            }
+
             public static bool GetAuth(string nick, string password)
             {
                 if(UserExits(nick))
@@ -210,35 +227,28 @@ namespace ShadeMsg_Server.DB
                 public static void AddFriend(string nick, string friend)
                 {
                     FriendsInfo oldF = GetFriendsInfo(nick);
-                    List<string> newFriends = new List<string>();
-
-                    foreach (string f in oldF.friends)
-                    {
-                        if(f != string.Empty)
-                        {
-                            newFriends.Add(f);
-                        }
-                    }
-                    newFriends.Add(friend);
-
-                    oldF.friends = newFriends.ToArray();
+                    oldF.friends = AddItemToArray(oldF.friends, friend);
                     SetFriendsInfo(nick, oldF);
                 }
 
                 public static void DellFriend(string nick, string friend)
                 {
                     FriendsInfo oldf = GetFriendsInfo(nick);
-                    List<string> newFriends = new List<string>();
+                    oldf.friends = DellItemFromArray(oldf.friends, friend);
+                    SetFriendsInfo(nick, oldf);
+                }
 
-                    foreach (string f in oldf.friends)
-                    {
-                        if (f != friend)
-                        {
-                            newFriends.Add(f);
-                        }
-                    }
+                public static void AddBlock(string nick,string block)
+                {
+                    FriendsInfo oldF = GetFriendsInfo(nick);
+                    oldF.blocked = AddItemToArray(oldF.blocked, block);
+                    SetFriendsInfo(nick, oldF);
+                }
 
-                    oldf.friends = newFriends.ToArray();
+                public static void RemoveBlock(string nick,string block)
+                {
+                    FriendsInfo oldf = GetFriendsInfo(nick);
+                    oldf.blocked = DellItemFromArray(oldf.blocked, block);
                     SetFriendsInfo(nick, oldf);
                 }
             }

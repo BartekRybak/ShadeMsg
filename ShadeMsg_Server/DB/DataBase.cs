@@ -36,9 +36,36 @@ namespace ShadeMsg_Server.DB
             return field;
         }
 
-        protected static string[] FieldToArray(string data, char separator)
+        public static string[] FieldToArray(string data, char separator)
         {
             return data.Split(separator);
+        }
+
+        public static string[] AddItemToArray(string[] array,string item)
+        {
+            List<string> list = new List<string>();
+            foreach(string i in array)
+            {
+                if(i != string.Empty)
+                {
+                    list.Add(i);
+                }
+            }
+            list.Add(item);
+            return list.ToArray();
+        }
+
+        public static string[] DellItemFromArray(string[] array,string item)
+        {
+            List<string> list = new List<string>();
+            foreach(string i in array)
+            {
+                if(i != item && i != string.Empty)
+                {
+                    list.Add(i);
+                }
+            }
+            return list.ToArray();
         }
     }
 }

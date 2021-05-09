@@ -10,6 +10,7 @@ namespace ShadeMsg.Cli.Rooms
         private Client client;
         public MainMenu_Room(Client client)
         {
+            Console.Clear();
             this.client = client;
             title = "MainMenu";
         }
@@ -18,10 +19,10 @@ namespace ShadeMsg.Cli.Rooms
         {
             if(client.logged)
             {
-                switch (Input("$>", new string[] { "/rooms", "/setting", "/test", "/exit" }))
+                switch (Input("$>", new string[] { "/friends", "/setting", "/test", "/exit" }))
                 {
                     case "/friends":
-                        Console.WriteLine("rooms");
+                        new Friends_Room(client).Show();
                         break;
                     case "/settings":
                         Console.WriteLine("settings");
@@ -42,10 +43,10 @@ namespace ShadeMsg.Cli.Rooms
                 switch (Input("$>", new string[] { "/register", "/login", "/info", "/exit" }))
                 {
                     case "/register":
-                        new Register_Room(Program.client).Show();
+                        new Register_Room(client).Show();
                         break;
                     case "/login":
-                        new Login_Room(Program.client).Show();
+                        new Login_Room(client).Show();
                         break;
                     case "/info":
                         break;

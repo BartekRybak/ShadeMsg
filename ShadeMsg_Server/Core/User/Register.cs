@@ -9,26 +9,19 @@ namespace ShadeMsg_Server.Core
 {
     class Register
     {
-        private Packet packet;
-        private Client client;
-
         public Register(Packet packet,Client client)
         {
-            this.packet = packet;
-            this.client = client;
-
             string nick = packet.GetArgument("nick").value;
             string password = packet.GetArgument("password").value;
             string error = string.Empty;
 
-            if(!DataBase.Users.UserExits(nick))
+            if(DataBase.Users.UserExits(nick)) { error = "This nickname is alredy taken"; }
+            if(DataBase.Users.IsBanned(nick)) { error = "Your account is banned :P"; }
+
+            if(error == string.Empty)
             {
                 DataBase.Users.CreateNew(nick, password);
-                Console.WriteLine("Creatgin New user [{0}]",nick);
-            }
-            else
-            {
-                error = "This nickname is alredy taken";
+                Console.WriteLine("Creatgin New user [{0}]", nick);
             }
 
             Packet res_packet = new Packet() { name = "register", args = new Argument[] {

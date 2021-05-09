@@ -14,6 +14,9 @@ namespace ShadeMsg
     class Program
     {
         public static Client client;
+        private static readonly string SERVER_ADRESS = "127.0.0.1";
+        private static readonly int SERVER_PORT = 8001;
+        private static readonly string SERVER_PASSWORD = "1234";
 
         static void Main(string[] args)
         {

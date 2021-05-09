@@ -8,6 +8,7 @@ using System.Net.Sockets;
 using System.Collections.Generic;
 using ShadeMsg.Network.Packets;
 using ShadeMsg_Server.Core;
+using ShadeMsg_Server.Core.User.Friends;
 using Microsoft.Data.Sqlite;
 using System.Data.SQLite;
 using ShadeMsg_Server.DB;
@@ -40,22 +41,12 @@ namespace ShadeMsg_Server
 
         private static void Test()
         {
-            //DataBase.Users.CreateNew("test1", "1234");
-           // DataBase.Users.CreateNew("test3", "1234");
-
-            /* RESET
-            SQLiteConnection.CreateFile("DataBase/Users.db");
-                DB_Users.CreateEmptyTable();
-                DB_Friends.CreateEmptyTable();
-            */
-
-            Console.WriteLine("done!");
+            //DataBase.Users.CreateNew("ShadeHero", "eloszmaty");
         }
 
         /// <summary>
         /// New Socket Connected
         /// </summary>
-        /// <param name="socket">client socket</param>
         private static void Server_NewSocketConnected(Socket socket)
         {
             Console.WriteLine("Connected: {0}", socket.RemoteEndPoint.ToString());
@@ -69,7 +60,6 @@ namespace ShadeMsg_Server
         /// <summary>
         /// Client Disconnected
         /// </summary>
-        /// <param name="client">disconnected client</param>
         private static void Client_Disconected(Client client)
         {
             for(int i =0;i< clients.ToArray().Length;i++)
@@ -86,14 +76,22 @@ namespace ShadeMsg_Server
         /// <summary>
         /// Receive new packet from 
         /// </summary>
-        /// <param name="packet"></param>
-        /// <param name="client"></param>
         private static void Client_NewPacket(Packet packet, Client client)
         {
             if(packet != Packet.Empty)
             {
                 Console.WriteLine(packet.ToString());
 
+                // Friends
+                switch(packet.name)
+                {
+                    case "friends-list":
+                        new FriendsList(client, packet);
+                        break;
+                }
+
+
+                // Auth
                 switch(packet.name)
                 {
                     case "register":

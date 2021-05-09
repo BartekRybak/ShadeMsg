@@ -10,14 +10,19 @@ namespace ShadeMsg.Network
     {
         public delegate void CathPacket_Delegate(Packet packet);
         public event CathPacket_Delegate PacketCaught;
-
         public bool packetWasCaught = false;
-
+        public Packet yourPacket;
         private Packet packetToCath;
 
         public ResponseCatcher(Packet packet)
         {
             packetToCath = packet;
+        }
+
+        public Packet WaitForPacket()
+        {
+            while(!packetWasCaught) { }
+            return yourPacket;
         }
 
         public void Catch(Packet packet)
@@ -26,7 +31,7 @@ namespace ShadeMsg.Network
             {
                 if(packet.GetArgument("type").value == "response")
                 {
-                    
+                    yourPacket = packet;
                     PacketCaught(packet);
                     packetWasCaught = true;
                 }

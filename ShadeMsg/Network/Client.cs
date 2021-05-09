@@ -28,6 +28,7 @@ namespace ShadeMsg.Network
 
         // logged
         public bool logged;
+        public string nick;
 
         public Client() { }
 

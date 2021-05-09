@@ -14,6 +14,7 @@ namespace ShadeMsg.Cli.Rooms
     {
         private Client client;
         private ResponseCatcher responseCatcher;
+        private static string nick;
         public Login_Room(Client client)
         {
             this.client = client;
@@ -23,7 +24,7 @@ namespace ShadeMsg.Cli.Rooms
         public override void Show()
         {
             Console.WriteLine("Login in to your account");
-            string nick = Input("Nick: ");
+            nick = Input("Nick: ");
             string password = Input("Password: ");
 
             List<string> validationErrors = new List<string>();
@@ -68,6 +69,7 @@ namespace ShadeMsg.Cli.Rooms
                 Console.Clear();
                 Console.WriteLine("Logged in, welcome in ShadeMSG", Color.GreenYellow);
                 Program.client.logged = true;
+                Program.client.nick = nick;
                 return;
             }
             else
